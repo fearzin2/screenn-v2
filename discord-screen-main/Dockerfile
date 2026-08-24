@@ -1,27 +1,19 @@
 FROM node:20-alpine
 
-# Set working directory
 WORKDIR /app
 
-# Copy package.json files
-COPY server/package*.json ./server/
-COPY client/package*.json ./client/
+# Copiar TUDO do repositório para o Docker (incluindo pastas escondidas como 'shared')
+COPY . .
 
-# Install server dependencies
+# Instalar pacotes do servidor
 RUN cd server && npm install
 
-# Install client dependencies
+# Instalar pacotes do cliente
 RUN cd client && npm install
 
-# Copy all files
-COPY server/ ./server/
-COPY client/ ./client/
-
-# Build the frontend (Vite)
+# Fazer o build do frontend
 RUN cd client && npm run build
 
-# Move to server directory
 WORKDIR /app/server
 
-# Start the Node.js server
 CMD ["node", "index.js"]
