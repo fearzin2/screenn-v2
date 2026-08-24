@@ -2510,7 +2510,7 @@ const PRANK_SOUNDS = {
 };
 
 const PRANK_IMAGES = {
-  susto: 'https://i.imgflip.com/6c6z6p.jpg',
+  susto: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/94.png',
 };
 
 const prankAudio = document.getElementById('prank-audio');
