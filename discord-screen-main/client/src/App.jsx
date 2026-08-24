@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import io from 'socket.io-client';
-import { MonitorUp, MonitorOff, Mic, MicOff, Video, VideoOff, PhoneOff, Users } from 'lucide-react';
+import { MonitorUp, MonitorOff, Mic, MicOff, Video, VideoOff, PhoneOff, Users, Wand2, Volume2, Image, Snowflake } from 'lucide-react';
 import './index.css';
 
 // Em desenvolvimento local usa a porta 3001, online (pelo cloudflare) usa a própria URL do site
@@ -11,6 +11,18 @@ const ICE_SERVERS = {
     { urls: 'stun:stun.l.google.com:19302' },
     { urls: 'stun:stun1.l.google.com:19302' },
   ],
+};
+
+// Configuração das Pegadinhas (Você pode trocar as URLs aqui depois)
+const PRANK_SOUNDS = {
+  buzina: 'https://www.myinstants.com/media/sounds/air-horn-club-sample_1.mp3',
+  gemidao: 'https://www.myinstants.com/media/sounds/gemidao-do-zap.mp3',
+  terror: 'https://www.myinstants.com/media/sounds/scary-screaming.mp3',
+  porta: 'https://www.myinstants.com/media/sounds/knocking-on-door-sound-effect.mp3'
+};
+
+const PRANK_IMAGES = {
+  susto: 'https://i.pinimg.com/originals/cf/22/0d/cf220d911c4225010996c56bc0a4de3a.png' // Imagem fantasma/susto genérica
 };
 
 function App() {
@@ -26,6 +38,11 @@ function App() {
   // Screen Share Quality State
   const [quality, setQuality] = useState('1080p60');
   
+  // Pranks State
+  const [pranksMenuOpen, setPranksMenuOpen] = useState(false);
+  const [isSnowing, setIsSnowing] = useState(false);
+  const [popupImage, setPopupImage] = useState(null);
+
   const qualityOptions = {
     '1080p60': { width: 1920, height: 1080, frameRate: 60, label: '1080p 60fps (Max)' },
     '1080p30': { width: 1920, height: 1080, frameRate: 30, label: '1080p 30fps (High)' },
@@ -98,6 +115,24 @@ function App() {
         delete updated[userId];
         return updated;
       });
+    });
+
+    // Escutar Interações/Pegadinhas
+    socketRef.current.on('interaction', (payload) => {
+      const { type, data } = payload;
+      
+      if (type === 'sound') {
+        const audioUrl = PRANK_SOUNDS[data] || data;
+        const audio = new Audio(audioUrl);
+        audio.play().catch(e => console.error("Audio play error", e));
+      } else if (type === 'image') {
+        const imageUrl = PRANK_IMAGES[data] || data;
+        setPopupImage(imageUrl);
+        setTimeout(() => setPopupImage(null), 3000); // Some depois de 3 seg
+      } else if (type === 'snow') {
+        setIsSnowing(true);
+        setTimeout(() => setIsSnowing(false), 10000); // Neve por 10 seg
+      }
     });
 
     return () => {
@@ -283,6 +318,38 @@ function App() {
     window.location.reload(); // Quick reset
   };
 
+  const sendInteraction = (type, data) => {
+    socketRef.current.emit('interaction', { roomId, type, data });
+    setPranksMenuOpen(false);
+  };
+
+  const renderSnow = () => {
+    if (!isSnowing) return null;
+    const flakes = Array.from({ length: 50 }).map((_, i) => (
+      <div 
+        key={i} 
+        className="snowflake" 
+        style={{ 
+          left: `${Math.random() * 100}vw`, 
+          animationDuration: `${Math.random() * 3 + 2}s`, 
+          animationDelay: `${Math.random() * 2}s` 
+        }}
+      >
+        ❄
+      </div>
+    ));
+    return <div className="snow-container">{flakes}</div>;
+  };
+
+  const renderPopup = () => {
+    if (!popupImage) return null;
+    return (
+      <div className="jumpscare-overlay">
+        <img src={popupImage} alt="Pegadinha" />
+      </div>
+    );
+  };
+
   // Remote Video Component
   const VideoPlayer = ({ stream, isLocal = false }) => {
     const ref = useRef();
@@ -395,7 +462,33 @@ function App() {
         <button onClick={leaveRoom} className="btn danger" style={{ borderRadius: '12px', padding: '0 1.5rem' }}>
           <PhoneOff size={18} /> Leave
         </button>
+
+        {/* Pranks Menu Toggle */}
+        <div style={{ position: 'relative' }}>
+          <button 
+            onClick={() => setPranksMenuOpen(!pranksMenuOpen)} 
+            className={`btn icon-btn ${pranksMenuOpen ? 'primary' : ''}`}
+            title="Pegadinhas e Interações"
+          >
+            <Wand2 />
+          </button>
+          
+          {pranksMenuOpen && (
+            <div className="pranks-menu">
+              <button onClick={() => sendInteraction('sound', 'buzina')} className="btn icon-btn" title="Buzina"><Volume2 size={16}/></button>
+              <button onClick={() => sendInteraction('sound', 'gemidao')} className="btn icon-btn" title="Gemidão"><Volume2 size={16}/></button>
+              <button onClick={() => sendInteraction('sound', 'terror')} className="btn icon-btn" title="Grito Terror"><Volume2 size={16}/></button>
+              <button onClick={() => sendInteraction('sound', 'porta')} className="btn icon-btn" title="Bater Porta"><Volume2 size={16}/></button>
+              <button onClick={() => sendInteraction('image', 'susto')} className="btn icon-btn" title="Foto (Susto)"><Image size={16}/></button>
+              <button onClick={() => sendInteraction('snow')} className="btn icon-btn" title="Fazer Nevar"><Snowflake size={16}/></button>
+            </div>
+          )}
+        </div>
       </div>
+      
+      {/* Efeitos Visuais (Renderizados por cima de tudo) */}
+      {renderSnow()}
+      {renderPopup()}
     </div>
   );
 }
