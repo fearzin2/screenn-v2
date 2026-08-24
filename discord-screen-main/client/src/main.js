@@ -2505,12 +2505,12 @@ $('probe').addEventListener('click', async () => {
 const PRANK_SOUNDS = {
   gemidao: 'https://raw.githubusercontent.com/gabrielrab/gemidao-whatsApp/master/gemidao.mp3',
   buzina: 'https://www.myinstants.com/media/sounds/mlg-airhorn.mp3',
-  terror: 'https://www.myinstants.com/media/sounds/scream_1.mp3',
+  terror: 'https://raw.githubusercontent.com/ReemanS/simple-js/main/scream2.mp3',
   porta: 'https://www.myinstants.com/media/sounds/door-knocking.mp3',
 };
 
 const PRANK_IMAGES = {
-  susto: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/94.png',
+  susto: 'https://raw.githubusercontent.com/ReemanS/simple-js/main/scare.jpg',
 };
 
 const prankAudio = document.getElementById('prank-audio');
