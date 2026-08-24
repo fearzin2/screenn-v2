@@ -1901,6 +1901,11 @@ function connect() {
         `${lastRoomState?.locked ? '🔒 ' : ''}${lastRoomState?.name ?? ''}`;
       $('roomSettings').hidden = lastRoomState?.ownerId !== session?.user?.id;
       $('roomSettings').classList.toggle('on', Boolean(lastRoomState?.locked));
+      
+      const isOwner = lastRoomState?.ownerId === session?.user?.id;
+      if ($('pranksGroup')) {
+        $('pranksGroup').hidden = !isOwner;
+      }
 
       // Limpa o que sumiu sem stream-stop (queda abrupta, por exemplo).
       const live = new Set((msg.streams ?? []).map((s) => s.slot));
@@ -1953,6 +1958,13 @@ function connect() {
       } else {
         toast('A sala foi fechada.', true);
         showLobby();
+      }
+    } else if (msg.type === 'prank') {
+      if (msg.action && typeof triggerPrankEffect === 'function') {
+        // Ignora se fui eu que mandei (eu já escutei localmente)
+        if (msg.from !== session?.user?.id) {
+          triggerPrankEffect(msg.action);
+        }
       }
     } else if (msg.type === 'error') {
       toast(msg.message, true);
@@ -2486,4 +2498,93 @@ $('probe').addEventListener('click', async () => {
   } catch (err) {
     toast(`Bloqueado (${err.name}): ${err.message}`, true);
   }
+});
+
+// ------------------------------------------------------- Pegadinhas (Pranks)
+
+const PRANK_SOUNDS = {
+  gemidao: 'https://www.myinstants.com/media/sounds/gemidao-do-zap-1.mp3',
+  buzina: 'https://www.myinstants.com/media/sounds/caminhao-buzina.mp3',
+  terror: 'https://www.myinstants.com/media/sounds/scary-scream.mp3',
+  porta: 'https://www.myinstants.com/media/sounds/knock-knock.mp3',
+};
+
+const PRANK_IMAGES = {
+  susto: 'https://i.imgflip.com/6c6z6p.jpg',
+};
+
+const prankAudio = document.getElementById('prank-audio');
+const jumpscareOverlay = document.getElementById('jumpscare-overlay');
+const jumpscareImage = document.getElementById('jumpscare-image');
+const snowContainer = document.getElementById('snow-container');
+
+function playPrankAudio(url) {
+  if (prankAudio) {
+    prankAudio.src = url;
+    prankAudio.volume = 1;
+    prankAudio.play().catch(console.error);
+  }
+}
+
+function showJumpscare(url) {
+  if (jumpscareOverlay && jumpscareImage) {
+    jumpscareImage.src = url;
+    jumpscareOverlay.hidden = false;
+    setTimeout(() => {
+      jumpscareOverlay.hidden = true;
+    }, 2000);
+  }
+}
+
+function startSnow() {
+  if (!snowContainer) return;
+  snowContainer.hidden = false;
+  snowContainer.innerHTML = '';
+  
+  for (let i = 0; i < 50; i++) {
+    const flake = document.createElement('div');
+    flake.classList.add('snowflake');
+    flake.style.left = Math.random() * 100 + 'vw';
+    flake.style.width = Math.random() * 10 + 5 + 'px';
+    flake.style.height = flake.style.width;
+    flake.style.animationDuration = Math.random() * 3 + 2 + 's';
+    flake.style.animationDelay = Math.random() * 2 + 's';
+    snowContainer.appendChild(flake);
+  }
+
+  setTimeout(() => {
+    snowContainer.hidden = true;
+    snowContainer.innerHTML = '';
+  }, 10000); // Neve para em 10 segundos
+}
+
+function triggerPrankEffect(prankName) {
+  if (PRANK_SOUNDS[prankName]) {
+    playPrankAudio(PRANK_SOUNDS[prankName]);
+  } else if (prankName === 'susto') {
+    playPrankAudio(PRANK_SOUNDS['terror'] || 'https://www.myinstants.com/media/sounds/scary-scream.mp3');
+    showJumpscare(PRANK_IMAGES.susto);
+  } else if (prankName === 'snow') {
+    startSnow();
+  }
+}
+
+document.querySelectorAll('.prank-btn').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    const prankName = e.target.getAttribute('data-prank');
+    if (!prankName) return;
+    
+    // Dispara para mim
+    triggerPrankEffect(prankName);
+
+    // Dispara para todos na sala via ws
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({ type: 'prank', action: prankName }));
+    }
+    
+    document.getElementById('pranksMenu').style.display = 'none';
+    setTimeout(() => {
+      document.getElementById('pranksMenu').style.display = ''; // Volta ao default (:hover)
+    }, 500);
+  });
 });
