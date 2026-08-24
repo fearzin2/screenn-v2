@@ -2503,10 +2503,10 @@ $('probe').addEventListener('click', async () => {
 // ------------------------------------------------------- Pegadinhas (Pranks)
 
 const PRANK_SOUNDS = {
-  gemidao: 'https://www.myinstants.com/media/sounds/gemidao-do-zap-1.mp3',
-  buzina: 'https://www.myinstants.com/media/sounds/caminhao-buzina.mp3',
-  terror: 'https://www.myinstants.com/media/sounds/scary-scream.mp3',
-  porta: 'https://www.myinstants.com/media/sounds/knock-knock.mp3',
+  gemidao: 'https://raw.githubusercontent.com/gabrielrab/gemidao-whatsApp/master/gemidao.mp3',
+  buzina: 'https://www.myinstants.com/media/sounds/mlg-airhorn.mp3',
+  terror: 'https://www.myinstants.com/media/sounds/scream_1.mp3',
+  porta: 'https://www.myinstants.com/media/sounds/door-knocking.mp3',
 };
 
 const PRANK_IMAGES = {
