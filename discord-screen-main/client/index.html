@@ -125,6 +125,20 @@
             </button>
           </div>
 
+          <div class="group" style="position: relative;" id="pranksGroup" hidden>
+            <button id="pranksBtn" class="btn" data-tip="Pegadinhas" aria-label="Pegadinhas">
+              🪄
+            </button>
+            <div id="pranksMenu" class="hover-list" style="bottom: 100%; top: auto; right: 0; left: auto; padding: 4px; z-index: 100;">
+              <button class="prank-btn hover-row" data-prank="buzina" title="Buzina">🔊 Buzina</button>
+              <button class="prank-btn hover-row" data-prank="gemidao" title="Gemidão">🔊 Gemidão</button>
+              <button class="prank-btn hover-row" data-prank="terror" title="Grito Terror">👻 Terror</button>
+              <button class="prank-btn hover-row" data-prank="porta" title="Bater Porta">🚪 Porta</button>
+              <button class="prank-btn hover-row" data-prank="susto" title="Susto (Foto)">🖼️ Susto</button>
+              <button class="prank-btn hover-row" data-prank="snow" title="Neve">❄️ Neve</button>
+            </div>
+          </div>
+
           <div class="group">
             <div id="volumeBox" class="volume" hidden>
               <button id="mute" class="btn" data-tip="Silenciar" aria-label="Silenciar">
@@ -225,6 +239,17 @@
 
       <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
     </div>
+
+    <!-- Jumpscare Overlay -->
+    <div id="jumpscare-overlay" class="jumpscare-overlay" hidden>
+      <img id="jumpscare-image" src="" alt="Jumpscare" />
+    </div>
+
+    <!-- Snow Container -->
+    <div id="snow-container" class="snow-container" hidden></div>
+
+    <!-- Prank Audio Player -->
+    <audio id="prank-audio"></audio>
 
     <script type="module" src="/src/main.js"></script>
   </body>
